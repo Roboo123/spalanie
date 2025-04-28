@@ -1,94 +1,125 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Text, StyleSheet, Alert } from 'react-native';
-import firestore from '@react-native-firebase/firestore';
+import { StatusBar } from 'expo-status-bar';
+import { Alert, StyleSheet, Text, TextInput, View, TouchableOpacity } from 'react-native';
+import { db } from './firebaseConfig';
+import { collection, addDoc } from 'firebase/firestore';
 
 export default function App() {
-  const [dystans, ustawDystans] = useState('');
-  const [paliwo, ustawPaliwo] = useState('');
-  const [wynik, ustawWynik] = useState(null);
+  const [fuelBurnt, setFuelBurnt] = useState('');
+  const [distance, setDistance] = useState('');
+  const [fuelPer100, setFuelPer100] = useState('');
 
-  const obliczISave = async () => {
-    const dystansLiczba = parseFloat(dystans);
-    const paliwoLiczba = parseFloat(paliwo);
-
-    if (!dystansLiczba || !paliwoLiczba) {
-      Alert.alert('Błąd', 'Wpisz poprawne liczby.');
+  const calculateFuelPer100 = () => {
+    if (fuelBurnt === '' || distance === '') {
+      Alert.alert('Błąd', 'Uzupełnij wszystkie pola');
       return;
     }
-
-    const spalanie100km = (paliwoLiczba / dystansLiczba) * 100;
-    const spalanieZaokraglone = spalanie100km.toFixed(2);
-
-    ustawWynik(spalanieZaokraglone);
-
-    try {
-      await firestore().collection('spalanie').add({
-        dystans: dystansLiczba,
-        zuzycie: paliwoLiczba,
-        zuzycie_100km: parseFloat(spalanieZaokraglone)
-      });
-
-      Alert.alert('Sukces', 'Dane zapisane!');
-      ustawDystans('');
-      ustawPaliwo('');
-    } catch (blad) {
-      console.error(blad);
-      Alert.alert('Błąd', 'Nie udało się zapisać danych.');
+    const fuel = parseFloat(fuelBurnt);
+    const dist = parseFloat(distance);
+    if (isNaN(fuel) || isNaN(dist) || dist <= 0) {
+      Alert.alert('Błąd', 'Podaj poprawne wartości');
+      return;
     }
-  };
+    const result = (fuel / dist) * 100;
+    setFuelPer100(result.toFixed(2));
+    setFuelBurnt('');
+    setDistance('');
+    addToDatabase(result.toFixed(2));
+  }
+
+  const addToDatabase = async (fuelResult) => {
+    try {
+      await addDoc(collection(db, 'spalanie'), {
+        zużycie: parseFloat(fuelBurnt),
+        dystans: parseFloat(distance),
+        zużycie_100km: fuelResult,
+      });
+      Alert.alert('Sukces', 'Dane zostały dodane do bazy danych');
+    } catch (error) {
+      Alert.alert('Błąd', 'Nie udało się dodać danych do bazy danych');
+    }
+  }
 
   return (
-    <View style={style.ekran}>
-      <Text style={style.tytul}>Kalkulator spalania</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Kalkulator Spalania</Text>
 
       <TextInput
-        style={style.pole}
-        placeholder="Dystans (km)"
+        style={styles.input}
+        placeholder="Ilość spalonego paliwa (L)"
+        value={fuelBurnt}
+        onChangeText={setFuelBurnt}
         keyboardType="numeric"
-        value={dystans}
-        onChangeText={ustawDystans}
+        placeholderTextColor="#888"
       />
 
       <TextInput
-        style={style.pole}
-        placeholder="Zużycie paliwa (litry)"
+        style={styles.input}
+        placeholder="Ilość przejechanych kilometrów (km)"
+        value={distance}
+        onChangeText={setDistance}
         keyboardType="numeric"
-        value={paliwo}
-        onChangeText={ustawPaliwo}
+        placeholderTextColor="#888"
       />
 
-      <Button title="Oblicz i Zapisz" onPress={obliczISave} />
+      <TouchableOpacity style={styles.button} onPress={calculateFuelPer100}>
+        <Text style={styles.buttonText}>Oblicz</Text>
+      </TouchableOpacity>
 
-      {wynik && (
-        <Text style={style.wynik}>Średnie spalanie: {wynik} l/100km</Text>
+      {fuelPer100 !== '' && (
+        <Text style={styles.result}>
+          Spalanie: {fuelPer100} L/100km
+        </Text>
       )}
+
+      <StatusBar style="auto" />
     </View>
   );
 }
 
-const style = StyleSheet.create({
-  ekran: {
+const styles = StyleSheet.create({
+  container: {
     flex: 1,
-    padding: 20,
+    backgroundColor: '#f0f4f7',
+    alignItems: 'center',
     justifyContent: 'center',
+    padding: 20,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 30,
+    color: '#333',
+  },
+  input: {
+    width: '100%',
+    height: 50,
     backgroundColor: '#fff',
-  },
-  tytul: {
-    fontSize: 24,
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    fontSize: 16,
     marginBottom: 20,
-    textAlign: 'center',
-  },
-  pole: {
     borderWidth: 1,
-    borderColor: '#aaa',
-    borderRadius: 8,
-    padding: 10,
-    marginVertical: 10,
+    borderColor: '#ccc',
   },
-  wynik: {
+  button: {
+    width: '100%',
+    height: 50,
+    backgroundColor: '#4caf50',
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+  },
+  buttonText: {
+    color: '#fff',
     fontSize: 18,
-    marginTop: 20,
-    textAlign: 'center',
-    color: 'green',
+    fontWeight: 'bold',
+  },
+  result: {
+    marginTop: 30,
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
   },
 });
