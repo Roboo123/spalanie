@@ -46,7 +46,7 @@ export default function App() {
 
       <TextInput
         style={styles.input}
-        placeholder="Ilość spalonego paliwa (L)"
+        placeholder="Ilość spalonego paliwa w litrach"
         value={fuelBurnt}
         onChangeText={setFuelBurnt}
         keyboardType="numeric"
@@ -80,7 +80,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f4f7',
+    backgroundColor: '#ffd700', 
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
@@ -89,37 +89,48 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 30,
-    color: '#333',
+    color: '#8b0000', 
+    textAlign: 'center', 
+    textShadowColor: '#000', 
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 3,
   },
   input: {
-    width: '100%',
-    height: 50,
+    width: '90%',
+    height: 60,
     backgroundColor: '#fff',
-    borderRadius: 10,
+    borderRadius: 20, 
     paddingHorizontal: 15,
-    fontSize: 16,
+    fontSize: 18,
     marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#ccc',
+    borderWidth: 2,
+    borderColor: '#8b0000', 
+    elevation: 3,
   },
   button: {
-    width: '100%',
-    height: 50,
-    backgroundColor: '#4caf50',
-    borderRadius: 10,
+    width: '90%',
+    height: 60, 
+    backgroundColor: '#00bfff', 
+    borderRadius: 20, 
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 10,
+    elevation: 3,
   },
   buttonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 20, 
     fontWeight: 'bold',
+    textTransform: 'uppercase', 
   },
   result: {
     marginTop: 30,
-    fontSize: 20,
+    fontSize: 24, 
     fontWeight: 'bold',
-    color: '#333',
+    color: '#006400', 
+    backgroundColor: '#fff',
+    padding: 10,
+    borderRadius: 10,
+    textAlign: 'center',
   },
 });
